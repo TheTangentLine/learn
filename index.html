@@ -24,6 +24,7 @@
           <li><a href="#" id="nav-home">Home</a></li>
           <li><a href="#" id="nav-repos">Repositories</a></li>
           <li><a href="#" id="nav-about">About</a></li>
+          <li><a href="#" id="nav-prompt">Prompt</a></li>
         </ul>
       </nav>
       <div class="header-actions">
@@ -241,6 +242,107 @@
               <!-- filled by JS -->
             </div>
           </div>
+        </div>
+
+        <!-- Prompt template -->
+        <div class="prompt-section section-wrap" id="prompt-section">
+          <div class="section-header">
+            <div>
+              <div class="section-eyebrow">Methodology</div>
+              <h2 class="section-title">The prompt behind every repo</h2>
+              <p class="section-desc">
+                Repos in the Full Course track are built from this template —
+                a structured curriculum prompt for end-to-end, project-based
+                mastery.
+              </p>
+            </div>
+          </div>
+          <pre
+            id="prompt-template-display"
+            class="prompt-template-box"
+            aria-label="Prompt template"
+          ></pre>
+        </div>
+
+        <!-- Prompt builder -->
+        <div class="prompt-section section-wrap prompt-builder-section">
+          <div class="section-header">
+            <div>
+              <div class="section-eyebrow">Try it</div>
+              <h2 class="section-title">Build your own prompt</h2>
+              <p class="section-desc">
+                Answer a few questions to fill in the placeholders and generate
+                a ready-to-use prompt for your next learning repo.
+              </p>
+            </div>
+          </div>
+
+          <form id="prompt-builder-form" class="prompt-builder-form" novalidate>
+            <div class="prompt-builder-grid">
+              <label class="prompt-field">
+                <span class="prompt-label">Topic(s) to master</span>
+                <input
+                  type="text"
+                  id="input-topics"
+                  name="topics"
+                  required
+                  placeholder="e.g. gRPC, microservices, load balancing"
+                />
+              </label>
+              <label class="prompt-field">
+                <span class="prompt-label">Number of weeks</span>
+                <input
+                  type="number"
+                  id="input-weeks"
+                  name="weeks"
+                  min="1"
+                  value="8"
+                  required
+                />
+              </label>
+              <label class="prompt-field">
+                <span class="prompt-label">Days per week</span>
+                <input
+                  type="number"
+                  id="input-days"
+                  name="days"
+                  min="1"
+                  max="7"
+                  value="5"
+                  required
+                />
+              </label>
+              <label class="prompt-field prompt-field-full">
+                <span class="prompt-label">Your baseline skills</span>
+                <textarea
+                  id="input-skills"
+                  name="skills"
+                  rows="3"
+                  required
+                  placeholder="e.g. Go, HTTP, Docker, basic algorithms"
+                ></textarea>
+              </label>
+            </div>
+            <p id="prompt-form-error" class="prompt-form-error" hidden></p>
+            <div class="prompt-builder-actions">
+              <button class="btn-primary" type="submit">Generate prompt</button>
+              <button
+                class="btn-ghost btn-copy"
+                type="button"
+                id="btn-copy-prompt"
+                disabled
+              >
+                Copy to clipboard
+              </button>
+            </div>
+          </form>
+
+          <pre
+            id="prompt-output"
+            class="prompt-output-box"
+            hidden
+            aria-label="Generated prompt"
+          ></pre>
         </div>
       </section>
 

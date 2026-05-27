@@ -939,6 +939,122 @@ body {
   background: #fff;
 }
 
+/* ── Prompt sections ─────────────────────────── */
+
+.prompt-section {
+  border-top: 1px solid var(--border);
+}
+
+.prompt-template-box,
+.prompt-output-box {
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+  font-size: 0.82rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.35rem 1.5rem;
+  box-shadow: var(--shadow-sm);
+  overflow-x: auto;
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.prompt-placeholder {
+  background: rgba(79, 70, 229, 0.12);
+  color: var(--accent);
+  padding: 0.05rem 0.35rem;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.prompt-builder-section {
+  padding-bottom: 5rem;
+}
+
+.prompt-builder-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.prompt-builder-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.prompt-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.prompt-field-full {
+  grid-column: 1 / -1;
+}
+
+.prompt-label {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.prompt-field input,
+.prompt-field textarea {
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.7rem 0.85rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.prompt-field input:focus,
+.prompt-field textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+
+.prompt-field textarea {
+  resize: vertical;
+  min-height: 88px;
+}
+
+.prompt-form-error {
+  color: #dc2626;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.prompt-builder-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.btn-copy:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-copy.copy-feedback {
+  border-color: #16a34a;
+  color: #16a34a;
+}
+
+.prompt-output-box {
+  margin-top: 1.5rem;
+  border-color: rgba(22, 163, 74, 0.35);
+  background: rgba(22, 163, 74, 0.04);
+}
+
 /* ── Responsive ──────────────────────────────── */
 
 @media (max-width: 760px) {
@@ -980,5 +1096,9 @@ body {
 
   .section-wrap {
     padding: 3rem 1.25rem;
+  }
+
+  .prompt-builder-grid {
+    grid-template-columns: 1fr;
   }
 }

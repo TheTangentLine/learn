@@ -48,6 +48,34 @@ const REPO_LABELS = {
 
 const REPO_ALLOWLIST = REPO_CATEGORIES.flatMap((c) => c.repos);
 
+const PROMPT_TEMPLATE = `Act as a senior technical mentor and industry expert in **[topics]**. I require a highly intensive, **[x]**-week curriculum to master this subject, dedicating **[y]** days per week.
+
+**My Baseline:**
+Do not treat me like a beginner. Calibrate the pacing, depth, and rigor strictly to my existing foundation: **[skill1, skill2, skill3...]**. Skip trivial introductions and basic definitions.
+
+**Format & Delivery Constraints:**
+I am compiling your daily lectures into a Git repository. Every lesson you generate must be a comprehensive, standalone Markdown file containing:
+
+* Clear heading hierarchies (\`#\`, \`##\`)
+* Properly formatted code blocks (with language specified)
+* Mathematical notations formatted in LaTeX (where applicable)
+
+**Weekly Challenge:**
+The final day of each week (Day **[y]**) must include a complex, real-world "Weekly Challenge." This challenge should synthesize the week's lectures into a practical project, system design task, or advanced problem-solving scenario.
+
+**Execution Flow:**
+
+1. First, output the complete, high-level syllabus broken down by weeks, daily modules, and the Weekly Challenges.
+2. Stop generating immediately after the syllabus. Do not write any lectures yet.
+3. Explicitly ask me: "Syllabus generated. Are you ready to begin Day 1?"`;
+
+const PROMPT_PLACEHOLDERS = [
+  '[topics]',
+  '[x]',
+  '[y]',
+  '[skill1, skill2, skill3...]',
+];
+
 // ── DOM refs ──────────────────────────────────────────────
 const viewWelcome      = document.getElementById('view-welcome');
 const viewRepos        = document.getElementById('view-repos');
@@ -68,6 +96,17 @@ const reposErrorMsg    = document.getElementById('repos-error-message');
 const reposSections    = document.getElementById('repos-sections');
 const tabFilterCont    = document.getElementById('repos-tab-filters');
 const statTotal        = document.getElementById('stat-total');
+const promptTemplateEl = document.getElementById('prompt-template-display');
+const promptBuilderForm = document.getElementById('prompt-builder-form');
+const promptFormError  = document.getElementById('prompt-form-error');
+const promptOutputEl   = document.getElementById('prompt-output');
+const btnCopyPrompt    = document.getElementById('btn-copy-prompt');
+const inputTopics      = document.getElementById('input-topics');
+const inputWeeks       = document.getElementById('input-weeks');
+const inputDays        = document.getElementById('input-days');
+const inputSkills      = document.getElementById('input-skills');
+
+let generatedPromptText = '';
 
 // Nav links
 document.getElementById('nav-home').addEventListener('click', (e) => { e.preventDefault(); showView('welcome'); });
@@ -76,6 +115,11 @@ document.getElementById('nav-about').addEventListener('click', (e) => {
   e.preventDefault();
   showView('welcome');
   setTimeout(() => document.querySelector('.about-section')?.scrollIntoView({ behavior: 'smooth' }), 50);
+});
+document.getElementById('nav-prompt').addEventListener('click', (e) => {
+  e.preventDefault();
+  showView('welcome');
+  setTimeout(() => document.getElementById('prompt-section')?.scrollIntoView({ behavior: 'smooth' }), 50);
 });
 
 // ── View switching ────────────────────────────────────────
@@ -110,6 +154,90 @@ function getDisplayName(name) {
 
 function getCategoryForRepo(repoName) {
   return REPO_CATEGORIES.find((c) => c.repos.includes(repoName));
+}
+
+// ── Prompt template ───────────────────────────────────────
+
+function highlightPlaceholders(text) {
+  let html = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  for (const placeholder of PROMPT_PLACEHOLDERS) {
+    const escaped = placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    html = html.replace(
+      new RegExp(escaped, 'g'),
+      `<mark class="prompt-placeholder">${placeholder}</mark>`
+    );
+  }
+
+  return html;
+}
+
+function renderPromptTemplate() {
+  if (!promptTemplateEl) return;
+  promptTemplateEl.innerHTML = highlightPlaceholders(PROMPT_TEMPLATE);
+}
+
+function buildPrompt({ topics, weeks, days, skills }) {
+  return PROMPT_TEMPLATE
+    .replaceAll('[topics]', topics)
+    .replaceAll('[x]', String(weeks))
+    .replaceAll('[y]', String(days))
+    .replaceAll('[skill1, skill2, skill3...]', skills);
+}
+
+function renderPromptOutput(text) {
+  generatedPromptText = text;
+  promptOutputEl.textContent = text;
+  promptOutputEl.hidden = false;
+  btnCopyPrompt.disabled = false;
+}
+
+function showPromptFormError(message) {
+  promptFormError.textContent = message;
+  promptFormError.hidden = !message;
+}
+
+function handlePromptSubmit(e) {
+  e.preventDefault();
+
+  const topics = inputTopics.value.trim();
+  const weeks = inputWeeks.value.trim();
+  const days = inputDays.value.trim();
+  const skills = inputSkills.value.trim();
+
+  if (!topics || !skills) {
+    showPromptFormError('Please enter both a topic and your baseline skills.');
+    return;
+  }
+
+  if (!weeks || Number(weeks) < 1 || !days || Number(days) < 1 || Number(days) > 7) {
+    showPromptFormError('Weeks must be at least 1 and days per week must be between 1 and 7.');
+    return;
+  }
+
+  showPromptFormError('');
+  renderPromptOutput(buildPrompt({ topics, weeks, days, skills }));
+  promptOutputEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+async function handleCopyPrompt() {
+  if (!generatedPromptText) return;
+
+  try {
+    await navigator.clipboard.writeText(generatedPromptText);
+    const original = btnCopyPrompt.textContent;
+    btnCopyPrompt.textContent = 'Copied!';
+    btnCopyPrompt.classList.add('copy-feedback');
+    setTimeout(() => {
+      btnCopyPrompt.textContent = original;
+      btnCopyPrompt.classList.remove('copy-feedback');
+    }, 2000);
+  } catch {
+    showPromptFormError('Could not copy to clipboard. Please select and copy manually.');
+  }
 }
 
 // ── Category chips (welcome) ──────────────────────────────
@@ -258,10 +386,13 @@ githubRef?.addEventListener('click', () => {
   window.open(`https://github.com/${GITHUB_USER}`, '_blank', 'noopener,noreferrer');
 });
 btnRetry.addEventListener('click', loadRepos);
+promptBuilderForm?.addEventListener('submit', handlePromptSubmit);
+btnCopyPrompt?.addEventListener('click', handleCopyPrompt);
 
 // ── Boot ──────────────────────────────────────────────────
 
 renderCategoryChips();
+renderPromptTemplate();
 
 const savedView = sessionStorage.getItem('activeView');
 showView(savedView === 'repos' ? 'repos' : 'welcome');
