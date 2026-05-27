@@ -1,0 +1,23 @@
+[
+  {
+    "id": "full-course",
+    "title": "Full Course",
+    "subtitle": "End-to-end guided learning paths",
+    "accent": "#4f46e5",
+    "bg": "#eeeeff"
+  },
+  {
+    "id": "from-scratch",
+    "title": "From Scratch",
+    "subtitle": "Build core systems from the ground up",
+    "accent": "#ea580c",
+    "bg": "#fff7ed"
+  },
+  {
+    "id": "application",
+    "title": "Application",
+    "subtitle": "Focused apps for specific concepts",
+    "accent": "#16a34a",
+    "bg": "#dcfce7"
+  }
+]

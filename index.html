@@ -30,7 +30,14 @@
         <a href="#" id="nav-repos">Repositories</a>
       </nav>
       <div class="header-actions">
-        <button class="btn-primary" type="button" id="github-ref">
+        <button
+          class="btn-primary github-picker-trigger"
+          type="button"
+          id="github-ref"
+          aria-haspopup="true"
+          aria-expanded="false"
+          aria-controls="github-picker"
+        >
           GitHub
         </button>
       </div>
@@ -352,40 +359,7 @@
           <div class="repos-header-inner">
             <h2 class="repos-title">All repositories</h2>
             <p class="repos-subtitle" id="repo-count">Loading…</p>
-            <div class="repos-tabs" id="repos-tab-filters" role="tablist">
-              <button
-                class="repos-tab active"
-                data-filter="all"
-                role="tab"
-                type="button"
-              >
-                All
-              </button>
-              <button
-                class="repos-tab"
-                data-filter="full-course"
-                role="tab"
-                type="button"
-              >
-                Full Course
-              </button>
-              <button
-                class="repos-tab"
-                data-filter="from-scratch"
-                role="tab"
-                type="button"
-              >
-                From Scratch
-              </button>
-              <button
-                class="repos-tab"
-                data-filter="application"
-                role="tab"
-                type="button"
-              >
-                Application
-              </button>
-            </div>
+            <div class="repos-tabs" id="repos-tab-filters" role="tablist"></div>
           </div>
         </div>
 
@@ -408,24 +382,26 @@
 
     <footer class="site-footer">
       <div class="footer-inner">
-        <div class="footer-top">
-          <div class="footer-brand">
-            <div class="footer-logo">
-              <img src="favicon.png" alt="" class="logo-icon" width="32" height="32" />
-              <span class="footer-title">Learn New Stack</span>
-            </div>
-            <p class="footer-tagline">Learn, learn more, learn forever</p>
-          </div>
-          <nav class="footer-links" aria-label="Footer">
-            <a href="#" data-nav="home">Home</a>
-            <a href="#" data-nav="about">About</a>
-            <a href="#" data-nav="prompt">Prompt</a>
-            <a href="#" data-nav="repos">Repositories</a>
-          </nav>
-        </div>
-        <div class="footer-bottom">
+        <p class="footer-tagline">Learn, learn more, learn forever</p>
+        <nav class="footer-sitemap" aria-label="Footer">
+          <a href="#" data-nav="home">Home</a>
+          <a href="#" data-nav="about">About</a>
+          <a href="#" data-nav="prompt">Prompt</a>
+          <a href="#" data-nav="repos">Repositories</a>
+        </nav>
+        <div class="footer-meta">
           <span class="footer-copy">&copy; 2026 TheTangentLine</span>
-          <button class="footer-github" type="button" id="footer-github">GitHub</button>
+          <button
+            class="footer-github github-picker-trigger"
+            type="button"
+            id="footer-github"
+            aria-haspopup="true"
+            aria-expanded="false"
+            aria-controls="github-picker"
+          >
+            GitHub
+            <span class="footer-github-caret" aria-hidden="true"></span>
+          </button>
         </div>
       </div>
     </footer>
@@ -435,6 +411,18 @@
       <button id="tab-home" class="tab tab-active" type="button">Home</button>
       <button id="tab-repos" class="tab" type="button">Repos</button>
     </nav>
+
+    <div id="github-picker-backdrop" class="github-picker-backdrop" hidden></div>
+    <div
+      id="github-picker"
+      class="github-picker"
+      role="menu"
+      aria-label="GitHub profiles"
+      hidden
+    >
+      <p class="github-picker-title">Profiles</p>
+      <ul class="github-picker-list" id="github-picker-list"></ul>
+    </div>
 
     <script src="index.js"></script>
   </body>

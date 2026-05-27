@@ -1,81 +1,73 @@
-const GITHUB_USER = 'TheTangentLine';
+let GITHUB_USERS = [];
+let REPO_CATEGORIES = [];
+let REPO_LABELS = {};
+let REPO_ALLOWLIST = [];
+let PROMPT_TEMPLATE = '';
+let PROMPT_PLACEHOLDERS = [];
 
-const REPO_CATEGORIES = [
-  {
-    id: 'full-course',
-    title: 'Full Course',
-    subtitle: 'End-to-end guided learning paths',
-    accent: '#4f46e5',
-    bg: '#eeeeff',
-    repos: ['Learn_microservice_communication', 'Learn_basic_devops'],
-  },
-  {
-    id: 'from-scratch',
-    title: 'From Scratch',
-    subtitle: 'Build core systems from the ground up',
-    accent: '#ea580c',
-    bg: '#fff7ed',
-    repos: ['Learn_LB', 'Learn_IPC', 'Learn_interpreter'],
-  },
-  {
-    id: 'application',
-    title: 'Application',
-    subtitle: 'Focused apps for specific concepts',
-    accent: '#16a34a',
-    bg: '#dcfce7',
-    repos: [
-      'Learn_SSL-TLS',
-      'Learn_gRPC',
-      'Learn_CICD',
-      'Learn_logging_system',
-      'Learn_OIDC',
-    ],
-  },
-];
+const DATA_BASE = 'data';
 
-const REPO_LABELS = {
-  'Learn_microservice_communication': 'Microservice Communication',
-  'Learn_basic_devops': 'Basic DevOps',
-  'Learn_LB': 'Load Balancer',
-  'Learn_IPC': 'Inter-Process Communication',
-  'Learn_interpreter': 'Interpreter',
-  'Learn_SSL-TLS': 'SSL / TLS',
-  'Learn_gRPC': 'gRPC',
-  'Learn_CICD': 'CI/CD with GitHub Actions',
-  'Learn_logging_system': 'Logging System',
-  'Learn_OIDC': 'OIDC Flow',
-};
+function buildCatalog(categories, repos) {
+  const labels = {};
+  const categoryMap = new Map(
+    categories.map((c) => [c.id, { ...c, repos: [] }])
+  );
+  const categoryIds = new Set(categories.map((c) => c.id));
 
-const REPO_ALLOWLIST = REPO_CATEGORIES.flatMap((c) => c.repos);
+  for (const { slug, label, category } of repos) {
+    labels[slug] = label;
+    const cat = categoryMap.get(category);
+    if (cat) {
+      cat.repos.push(slug);
+    } else {
+      console.warn(`repos.json: unknown category "${category}" for slug "${slug}"`);
+    }
+  }
 
-const PROMPT_TEMPLATE = `Act as a senior technical mentor and industry expert in **[topics]**. I require a highly intensive, **[x]**-week curriculum to master this subject, dedicating **[y]** days per week.
+  for (const cat of categoryMap.values()) {
+    if (cat.repos.length === 0) {
+      console.warn(`categories.json: category "${cat.id}" has no repos`);
+    }
+  }
 
-**My Baseline:**
-Do not treat me like a beginner. Calibrate the pacing, depth, and rigor strictly to my existing foundation: **[skill1, skill2, skill3...]**. Skip trivial introductions and basic definitions.
+  return {
+    categories: [...categoryMap.values()],
+    labels,
+    allowlist: repos.map((r) => r.slug),
+  };
+}
 
-**Format & Delivery Constraints:**
-I am compiling your daily lectures into a Git repository. Every lesson you generate must be a comprehensive, standalone Markdown file containing:
+async function loadSiteData() {
+  const [configRes, categoriesRes, reposRes, templateRes, promptRes] = await Promise.all([
+    fetch(`${DATA_BASE}/config.json`),
+    fetch(`${DATA_BASE}/categories.json`),
+    fetch(`${DATA_BASE}/repos.json`),
+    fetch(`${DATA_BASE}/prompt-template.md`),
+    fetch(`${DATA_BASE}/prompt.json`),
+  ]);
 
-* Clear heading hierarchies (\`#\`, \`##\`)
-* Properly formatted code blocks (with language specified)
-* Mathematical notations formatted in LaTeX (where applicable)
-* Mermaid diagrams (\`flowchart\`, \`sequenceDiagram\`, etc.) used frequently to illustrate flows, architectures, and process logic
+  if (!configRes.ok) throw new Error(`Failed to load config.json (${configRes.status})`);
+  if (!categoriesRes.ok) throw new Error(`Failed to load categories.json (${categoriesRes.status})`);
+  if (!reposRes.ok) throw new Error(`Failed to load repos.json (${reposRes.status})`);
+  if (!templateRes.ok) throw new Error(`Failed to load prompt-template.md (${templateRes.status})`);
+  if (!promptRes.ok) throw new Error(`Failed to load prompt.json (${promptRes.status})`);
 
-**Weekly Challenge:**
-The final day of each week (Day **[y]**) must include a complex, real-world "Weekly Challenge." This challenge should synthesize the week's lectures into a practical project, system design task, or advanced problem-solving scenario.
+  const config = await configRes.json();
+  const categories = await categoriesRes.json();
+  const repos = await reposRes.json();
+  const promptMeta = await promptRes.json();
+  const catalog = buildCatalog(categories, repos);
 
-**Execution Flow:**
-
-1. First, output the complete, high-level syllabus broken down by weeks, daily modules, and the Weekly Challenges.
-2. Stop generating immediately after the syllabus. Do not write any lectures yet.
-3. Explicitly ask me: "Syllabus generated. Are you ready to begin Day 1?"`;
-
-const PROMPT_PLACEHOLDERS = [
-  '[topics]',
-  '[x]',
-  '[y]',
-  '[skill1, skill2, skill3...]',
-];
+  if (!Array.isArray(config) || config.length === 0) {
+    throw new Error('config.json must be a non-empty array of GitHub usernames');
+  }
+  GITHUB_USERS = config;
+  REPO_CATEGORIES = catalog.categories;
+  REPO_LABELS = catalog.labels;
+  REPO_ALLOWLIST = catalog.allowlist;
+  PROMPT_TEMPLATE = await templateRes.text();
+  PROMPT_PLACEHOLDERS = promptMeta.placeholders;
+}
 
 // ── DOM refs ──────────────────────────────────────────────
 const viewWelcome      = document.getElementById('view-welcome');
@@ -85,7 +77,6 @@ const tabRepos         = document.getElementById('tab-repos');
 const btnContinue      = document.getElementById('btn-continue');
 const btnViewAll       = document.getElementById('btn-view-all');
 const btnAboutRepos    = document.getElementById('btn-about-repos');
-const githubRef        = document.getElementById('github-ref');
 const btnRetry         = document.getElementById('btn-retry');
 const repoCountEl      = document.getElementById('repo-count');
 const categoryChipsEl  = document.getElementById('category-chips');
@@ -252,6 +243,21 @@ async function handleCopyPrompt() {
   }
 }
 
+// ── Repo filter tabs ──────────────────────────────────────
+
+function renderRepoFilterTabs() {
+  if (!tabFilterCont) return;
+  const allTab = `
+    <button class="repos-tab active" data-filter="all" role="tab" type="button">All</button>
+  `;
+  const categoryTabs = REPO_CATEGORIES.map(
+    (cat) => `
+      <button class="repos-tab" data-filter="${cat.id}" role="tab" type="button">${cat.title}</button>
+    `
+  ).join('');
+  tabFilterCont.innerHTML = allTab + categoryTabs;
+}
+
 // ── Category chips (welcome) ──────────────────────────────
 
 function renderCategoryChips() {
@@ -350,15 +356,30 @@ function showReposState(state, message) {
 
 let cachedRepos = null;
 
-async function fetchRepos() {
+async function fetchReposForUser(username) {
   const res = await fetch(
-    `https://api.github.com/users/${GITHUB_USER}/repos?per_page=100`,
+    `https://api.github.com/users/${username}/repos?per_page=100`,
     { headers: { Accept: 'application/vnd.github+json' } }
   );
-  if (!res.ok) throw new Error(`GitHub API returned ${res.status}`);
-  const all = await res.json();
+  if (!res.ok) throw new Error(`GitHub API returned ${res.status} for ${username}`);
+  return res.json();
+}
+
+async function fetchRepos() {
+  const results = await Promise.all(GITHUB_USERS.map(fetchReposForUser));
   const allow = new Set(REPO_ALLOWLIST);
-  return all.filter((r) => allow.has(r.name));
+  const seen = new Set();
+  const merged = [];
+
+  for (const repos of results) {
+    for (const repo of repos) {
+      if (!allow.has(repo.name) || seen.has(repo.name)) continue;
+      seen.add(repo.name);
+      merged.push(repo);
+    }
+  }
+
+  return merged;
 }
 
 async function loadRepos() {
@@ -394,12 +415,103 @@ tabRepos.addEventListener('click', () => showView('repos'));
 [btnContinue, btnViewAll, btnAboutRepos].forEach((btn) => {
   btn?.addEventListener('click', () => showView('repos'));
 });
-githubRef?.addEventListener('click', () => {
-  window.open(`https://github.com/${GITHUB_USER}`, '_blank', 'noopener,noreferrer');
-});
 btnRetry?.addEventListener('click', loadRepos);
 promptBuilderForm?.addEventListener('submit', handlePromptSubmit);
 btnCopyPrompt?.addEventListener('click', handleCopyPrompt);
+
+let githubPickerTrigger = null;
+
+function renderGithubPickerList() {
+  const list = document.getElementById('github-picker-list');
+  if (!list) return;
+  list.innerHTML = GITHUB_USERS.map(
+    (user) => `
+      <li role="none">
+        <a
+          class="github-picker-link"
+          role="menuitem"
+          href="https://github.com/${user}"
+          target="_blank"
+          rel="noopener noreferrer"
+        >@${user}</a>
+      </li>
+    `
+  ).join('');
+}
+
+function positionGithubPicker(trigger, picker) {
+  const rect = trigger.getBoundingClientRect();
+  const gap = 8;
+  const width = picker.offsetWidth;
+  const height = picker.offsetHeight;
+
+  let left = rect.right - width;
+  left = Math.max(8, Math.min(left, window.innerWidth - width - 8));
+
+  let top = rect.bottom + gap;
+  if (top + height > window.innerHeight - 8) {
+    top = rect.top - height - gap;
+  }
+  top = Math.max(8, top);
+
+  picker.style.top = `${top}px`;
+  picker.style.left = `${left}px`;
+}
+
+function closeGithubPicker() {
+  const picker = document.getElementById('github-picker');
+  const backdrop = document.getElementById('github-picker-backdrop');
+  if (picker) picker.hidden = true;
+  if (backdrop) backdrop.hidden = true;
+  if (githubPickerTrigger) {
+    githubPickerTrigger.setAttribute('aria-expanded', 'false');
+    githubPickerTrigger = null;
+  }
+}
+
+function openGithubPicker(trigger) {
+  if (!GITHUB_USERS.length) return;
+
+  const picker = document.getElementById('github-picker');
+  const backdrop = document.getElementById('github-picker-backdrop');
+  if (!picker || !backdrop) return;
+
+  if (!picker.hidden && githubPickerTrigger === trigger) {
+    closeGithubPicker();
+    return;
+  }
+
+  renderGithubPickerList();
+  githubPickerTrigger = trigger;
+  trigger.setAttribute('aria-expanded', 'true');
+  backdrop.hidden = false;
+  picker.hidden = false;
+  positionGithubPicker(trigger, picker);
+}
+
+function wireGithubPickers() {
+  const backdrop = document.getElementById('github-picker-backdrop');
+  const picker = document.getElementById('github-picker');
+
+  document.querySelectorAll('.github-picker-trigger').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openGithubPicker(btn);
+    });
+  });
+
+  backdrop?.addEventListener('click', closeGithubPicker);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && picker && !picker.hidden) closeGithubPicker();
+  });
+
+  window.addEventListener('resize', () => {
+    if (githubPickerTrigger && picker && !picker.hidden) {
+      positionGithubPicker(githubPickerTrigger, picker);
+    }
+  });
+}
 
 function wireFooterNav() {
   document.querySelectorAll('.site-footer [data-nav]').forEach((link) => {
@@ -421,14 +533,33 @@ function wireFooterNav() {
     });
   });
 
-  document.getElementById('footer-github')?.addEventListener('click', () => {
-    window.open(`https://github.com/${GITHUB_USER}`, '_blank', 'noopener,noreferrer');
-  });
 }
 
-function initPage() {
+function showSiteDataError(message) {
+  console.error(message);
+  if (repoCountEl) repoCountEl.textContent = 'Site configuration could not be loaded';
+  if (reposErrorMsg) reposErrorMsg.textContent = message;
+  showReposState('error', message);
+  if (promptTemplateEl) {
+    promptTemplateEl.textContent = 'Prompt template unavailable — check data/ files.';
+  }
+}
+
+async function initPage() {
+  try {
+    await loadSiteData();
+  } catch (err) {
+    showSiteDataError(err.message || 'Failed to load site data.');
+    wireFooterNav();
+    const savedView = sessionStorage.getItem('activeView');
+    showView(savedView === 'repos' ? 'repos' : 'welcome');
+    return;
+  }
+
+  renderRepoFilterTabs();
   renderCategoryChips();
   renderPromptTemplate();
+  wireGithubPickers();
   wireFooterNav();
 
   const savedView = sessionStorage.getItem('activeView');
@@ -437,7 +568,7 @@ function initPage() {
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initPage);
+  document.addEventListener('DOMContentLoaded', () => { initPage(); });
 } else {
   initPage();
 }
