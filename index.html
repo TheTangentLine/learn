@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Learn New Stack</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <!-- ── Header ── -->
+    <header class="site-header">
+      <div class="site-logo">
+        <div class="logo-mark"><span>LNS</span></div>
+        <span class="site-title">Learn New Stack</span>
+      </div>
+      <nav aria-label="Main">
+        <ul class="header-nav">
+          <li><a href="#" id="nav-home">Home</a></li>
+          <li><a href="#" id="nav-repos">Repositories</a></li>
+          <li><a href="#" id="nav-about">About</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <button class="btn-ghost" type="button" id="header-browse">
+          Browse repos
+        </button>
+        <button class="btn-primary" type="button">GitHub</button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <!-- ────────────────── WELCOME VIEW ────────────────── -->
+      <section id="view-welcome" class="view view-active" aria-label="Welcome">
+        <!-- Hero -->
+        <div class="hero-section">
+          <div class="hero-copy">
+            <div class="hero-eyebrow">Start Learning Today</div>
+            <h1 class="hero-title">
+              Build real systems.<br /><em>From scratch.</em>
+            </h1>
+            <p class="hero-subtitle">
+              A curated collection of hands-on repos covering backend
+              architecture, DevOps, security, and distributed systems — built to
+              teach by doing.
+            </p>
+            <div class="hero-actions">
+              <button class="btn-hero" id="btn-continue" type="button">
+                Browse repos
+                <svg
+                  width="16"
+                  height="16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="hero-visual">
+            <div class="hero-stat-cards">
+              <div class="stat-card accent-purple">
+                <div class="stat-card-accent">
+                  <svg
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                    />
+                  </svg>
+                </div>
+                <div class="stat-value" id="stat-total">10</div>
+                <div class="stat-label">Learning repos</div>
+              </div>
+              <div class="stat-card accent-green">
+                <div class="stat-card-accent">
+                  <svg
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M9 11l3 3L22 4" />
+                    <path
+                      d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"
+                    />
+                  </svg>
+                </div>
+                <div class="stat-value">3</div>
+                <div class="stat-label">Learning tracks</div>
+              </div>
+              <div class="stat-card accent-orange">
+                <div class="stat-card-accent">
+                  <svg
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <polyline points="16 18 22 12 16 6" />
+                    <polyline points="8 6 2 12 8 18" />
+                  </svg>
+                </div>
+                <div class="stat-value">5+</div>
+                <div class="stat-label">Languages</div>
+              </div>
+              <div class="stat-card accent-dark">
+                <div class="stat-card-accent">
+                  <svg
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                </div>
+                <div class="stat-value">Free</div>
+                <div class="stat-label">Open source</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trusted strip -->
+        <div class="trusted-strip">
+          <span class="trusted-label">Topics covered</span>
+          <div class="trusted-logos">
+            <span class="trusted-logo">gRPC</span>
+            <span class="trusted-logo">SSL / TLS</span>
+            <span class="trusted-logo">CI / CD</span>
+            <span class="trusted-logo">Microservices</span>
+            <span class="trusted-logo">DevOps</span>
+            <span class="trusted-logo">OIDC</span>
+          </div>
+        </div>
+
+        <!-- Category preview -->
+        <div class="section-wrap">
+          <div class="section-header">
+            <div>
+              <div class="section-eyebrow">Tracks</div>
+              <h2 class="section-title">Explore learning tracks</h2>
+              <p class="section-desc">
+                Choose a structured path or dive into any topic that interests
+                you.
+              </p>
+            </div>
+            <button class="btn-view-all" id="btn-view-all" type="button">
+              All repos
+              <svg
+                width="14"
+                height="14"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                viewBox="0 0 24 24"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="category-preview-grid" id="category-chips"></div>
+        </div>
+
+        <!-- About strip -->
+        <div class="about-section">
+          <div class="about-inner">
+            <div>
+              <div class="about-eyebrow">About</div>
+              <h2 class="about-title">Learn by building real systems</h2>
+              <p class="about-desc">
+                Every repo in this collection is a self-contained project with
+                working code, clear documentation, and incremental complexity —
+                so you understand not just what to build, but why every piece
+                fits together.
+              </p>
+              <div class="about-features">
+                <div class="about-feature">
+                  <div class="about-check">✓</div>
+                  <div class="about-feature-title">Working code</div>
+                  <div class="about-feature-desc">
+                    Every repo runs end-to-end out of the box.
+                  </div>
+                </div>
+                <div class="about-feature">
+                  <div class="about-check">✓</div>
+                  <div class="about-feature-title">Incremental steps</div>
+                  <div class="about-feature-desc">
+                    Build complexity layer by layer.
+                  </div>
+                </div>
+                <div class="about-feature">
+                  <div class="about-check">✓</div>
+                  <div class="about-feature-title">Real patterns</div>
+                  <div class="about-feature-desc">
+                    Industry-standard architecture and tooling.
+                  </div>
+                </div>
+                <div class="about-feature">
+                  <div class="about-check">✓</div>
+                  <div class="about-feature-title">Open source</div>
+                  <div class="about-feature-desc">
+                    Free to fork, modify, and build on.
+                  </div>
+                </div>
+              </div>
+              <br />
+              <button class="btn-about" id="btn-about-repos" type="button">
+                Start exploring
+                <svg
+                  width="15"
+                  height="15"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+
+            <div class="about-visual" id="about-repo-list">
+              <!-- filled by JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ────────────────── REPOS VIEW ────────────────── -->
+      <section id="view-repos" class="view" hidden aria-label="Repositories">
+        <div class="repos-header">
+          <div class="repos-header-inner">
+            <h2 class="repos-title">All repositories</h2>
+            <p class="repos-subtitle" id="repo-count">Loading…</p>
+            <div class="repos-tabs" id="repos-tab-filters" role="tablist">
+              <button
+                class="repos-tab active"
+                data-filter="all"
+                role="tab"
+                type="button"
+              >
+                All
+              </button>
+              <button
+                class="repos-tab"
+                data-filter="full-course"
+                role="tab"
+                type="button"
+              >
+                Full Course
+              </button>
+              <button
+                class="repos-tab"
+                data-filter="from-scratch"
+                role="tab"
+                type="button"
+              >
+                From Scratch
+              </button>
+              <button
+                class="repos-tab"
+                data-filter="application"
+                role="tab"
+                type="button"
+              >
+                Application
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="repos-main">
+          <div id="repos-loading" class="repos-loading">
+            <div class="spinner"></div>
+            <p>Loading repositories…</p>
+          </div>
+          <div id="repos-error" class="repos-error" hidden>
+            <p id="repos-error-message">Failed to load repositories.</p>
+            <br />
+            <button id="btn-retry" class="btn-ghost" type="button">
+              Retry
+            </button>
+          </div>
+          <div id="repos-sections" class="repos-sections" hidden></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ── Bottom tab nav ── -->
+    <nav class="tab-nav" aria-label="Primary navigation">
+      <button id="tab-home" class="tab tab-active" type="button">Home</button>
+      <button id="tab-repos" class="tab" type="button">Repos</button>
+    </nav>
+
+    <script src="index.js"></script>
+  </body>
+</html>
