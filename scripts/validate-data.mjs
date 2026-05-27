@@ -84,7 +84,7 @@ const reposPerCategory = new Map([...categoryIds].map((id) => [id, 0]));
 
 repos.forEach((repo, i) => {
   const prefix = `repos.json[${i}]`;
-  const { slug, label, category } = repo;
+  const { slug, label, category, username } = repo;
 
   if (!slug || typeof slug !== 'string') {
     error(`${prefix}: "slug" must be a non-empty string`);
@@ -94,6 +94,9 @@ repos.forEach((repo, i) => {
   }
   if (!category || typeof category !== 'string') {
     error(`${prefix}: "category" must be a non-empty string`);
+  }
+  if (!username || typeof username !== 'string') {
+    error(`${prefix}: "username" must be a non-empty string`);
   }
 
   if (slug && slugs.has(slug)) {
@@ -105,6 +108,10 @@ repos.forEach((repo, i) => {
     error(`${prefix}: unknown category "${category}"`);
   } else if (category) {
     reposPerCategory.set(category, (reposPerCategory.get(category) ?? 0) + 1);
+  }
+
+  if (username && !seenUsers.has(username)) {
+    error(`${prefix}: username "${username}" is not listed in config.json`);
   }
 });
 

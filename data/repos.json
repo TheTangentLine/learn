@@ -2,51 +2,61 @@
   {
     "slug": "Learn_microservice_communication",
     "label": "Microservice Communication",
-    "category": "full-course"
+    "category": "full-course",
+    "username": "TheTangentLine"
   },
   {
     "slug": "Learn_basic_devops",
     "label": "Basic DevOps",
-    "category": "full-course"
+    "category": "full-course",
+    "username": "TheTangentLine"
   },
   {
     "slug": "Learn_LB",
     "label": "Load Balancer",
-    "category": "from-scratch"
+    "category": "from-scratch",
+    "username": "TheTangentLine"
   },
   {
     "slug": "Learn_IPC",
     "label": "Inter-Process Communication",
-    "category": "from-scratch"
+    "category": "from-scratch",
+    "username": "TheTangentLine"
   },
   {
     "slug": "Learn_interpreter",
     "label": "Interpreter",
-    "category": "from-scratch"
+    "category": "from-scratch",
+    "username": "TheTangentLine"
   },
   {
     "slug": "Learn_SSL-TLS",
     "label": "SSL / TLS",
-    "category": "application"
+    "category": "application",
+    "username": "TheTangentLine"
   },
   {
     "slug": "Learn_gRPC",
     "label": "gRPC",
-    "category": "application"
+    "category": "application",
+    "username": "TheTangentLine"
   },
   {
     "slug": "Learn_CICD",
     "label": "CI/CD with GitHub Actions",
-    "category": "application"
+    "category": "application",
+    "username": "TheTangentLine"
   },
   {
     "slug": "Learn_logging_system",
     "label": "Logging System",
-    "category": "application"
+    "category": "application",
+    "username": "TheTangentLine"
   },
   {
     "slug": "Learn_OIDC",
     "label": "OIDC Flow",
-    "category": "application"
+    "category": "application",
+    "username": "TheTangentLine"
   }
 ]

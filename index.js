@@ -1,7 +1,7 @@
 let GITHUB_USERS = [];
 let REPO_CATEGORIES = [];
 let REPO_LABELS = {};
-let REPO_ALLOWLIST = [];
+let REPO_REGISTRY = [];
 let PROMPT_TEMPLATE = '';
 let PROMPT_PLACEHOLDERS = [];
 
@@ -14,13 +14,16 @@ function buildCatalog(categories, repos) {
   );
   const categoryIds = new Set(categories.map((c) => c.id));
 
-  for (const { slug, label, category } of repos) {
+  for (const { slug, label, category, username } of repos) {
     labels[slug] = label;
     const cat = categoryMap.get(category);
     if (cat) {
       cat.repos.push(slug);
     } else {
       console.warn(`repos.json: unknown category "${category}" for slug "${slug}"`);
+    }
+    if (!username) {
+      console.warn(`repos.json: missing username for slug "${slug}"`);
     }
   }
 
@@ -33,7 +36,7 @@ function buildCatalog(categories, repos) {
   return {
     categories: [...categoryMap.values()],
     labels,
-    allowlist: repos.map((r) => r.slug),
+    registry: repos,
   };
 }
 
@@ -64,7 +67,7 @@ async function loadSiteData() {
   GITHUB_USERS = config;
   REPO_CATEGORIES = catalog.categories;
   REPO_LABELS = catalog.labels;
-  REPO_ALLOWLIST = catalog.allowlist;
+  REPO_REGISTRY = catalog.registry;
   PROMPT_TEMPLATE = await templateRes.text();
   PROMPT_PLACEHOLDERS = promptMeta.placeholders;
 }
@@ -366,15 +369,20 @@ async function fetchReposForUser(username) {
 }
 
 async function fetchRepos() {
-  const results = await Promise.all(GITHUB_USERS.map(fetchReposForUser));
-  const allow = new Set(REPO_ALLOWLIST);
+  const wanted = new Map(
+    REPO_REGISTRY.map((r) => [`${r.username}:${r.slug}`, r])
+  );
+  const usersNeeded = [...new Set(REPO_REGISTRY.map((r) => r.username))];
   const seen = new Set();
   const merged = [];
 
-  for (const repos of results) {
-    for (const repo of repos) {
-      if (!allow.has(repo.name) || seen.has(repo.name)) continue;
-      seen.add(repo.name);
+  const results = await Promise.all(usersNeeded.map(fetchReposForUser));
+  for (let i = 0; i < usersNeeded.length; i++) {
+    const username = usersNeeded[i];
+    for (const repo of results[i]) {
+      const key = `${username}:${repo.name}`;
+      if (!wanted.has(key) || seen.has(key)) continue;
+      seen.add(key);
       merged.push(repo);
     }
   }

@@ -10,7 +10,7 @@ List one or more GitHub usernames as a JSON array:
 ["TheTangentLine", "AnotherOrg"]
 ```
 
-Repos are fetched from every user; duplicates (same repo name) are kept once. Header and footer **GitHub** buttons open a menu listing every username in `config.json`.
+Header and footer **GitHub** buttons open a menu listing every username in `config.json`. Repo metadata is fetched only from usernames referenced in `repos.json`.
 
 ## Add a learning repo
 
@@ -20,7 +20,8 @@ Repos are fetched from every user; duplicates (same repo name) are kept once. He
 {
   "slug": "Learn_my_topic",
   "label": "My Topic",
-  "category": "application"
+  "category": "application",
+  "username": "TheTangentLine"
 }
 ```
 
@@ -29,6 +30,7 @@ Repos are fetched from every user; duplicates (same repo name) are kept once. He
 | `slug` | yes | Exact GitHub repository name |
 | `label` | yes | Title shown on the site |
 | `category` | yes | Must match an `id` in [`categories.json`](categories.json) |
+| `username` | yes | GitHub owner; must appear in [`config.json`](config.json) |
 
 2. Validate and commit:
 
@@ -36,7 +38,7 @@ Repos are fetched from every user; duplicates (same repo name) are kept once. He
 node scripts/validate-data.mjs
 ```
 
-The repo must exist under one of the GitHub users listed in [`config.json`](config.json) (a JSON array of usernames). The site fetches public repo metadata from the GitHub API for each user and merges results.
+The repo must exist under the `username` account on GitHub. That username must also be listed in `config.json`.
 
 **Naming convention:** learning repos use the `Learn_` prefix (e.g. `Learn_gRPC`).
 
@@ -68,7 +70,7 @@ Filter tabs and welcome cards update automatically; no HTML or JS edits needed.
 
 | Problem | Check |
 |---------|--------|
-| Repo missing on site | `slug` in `repos.json` matches GitHub exactly; run validate script |
+| Repo missing on site | `slug` and `username` match GitHub exactly; run validate script |
 | Wrong category / badge | `category` field matches a `categories.json` `id` |
 | Validation fails | Read script output — unknown category, duplicate slug, or missing field |
 | Nothing loads | Browser console / network tab — `data/*.json` must be reachable (same folder as `index.html` on Pages) |
@@ -77,7 +79,7 @@ Filter tabs and welcome cards update automatically; no HTML or JS edits needed.
 
 | File | Purpose |
 |------|---------|
-| `config.json` | JSON array of GitHub usernames (API fetch for all; header/footer menu lists each profile) |
+| `config.json` | JSON array of GitHub usernames (header/footer profile menu) |
 | `categories.json` | Track metadata (colors, titles) |
 | `repos.json` | **Single registry** of all listed repos |
 | `prompt-template.md` | AI curriculum prompt template |
