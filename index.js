@@ -400,9 +400,35 @@ btnRetry?.addEventListener('click', loadRepos);
 promptBuilderForm?.addEventListener('submit', handlePromptSubmit);
 btnCopyPrompt?.addEventListener('click', handleCopyPrompt);
 
+function wireFooterNav() {
+  document.querySelectorAll('.site-footer [data-nav]').forEach((link) => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = link.dataset.nav;
+      if (target === 'repos') {
+        showView('repos');
+      } else {
+        showView('welcome');
+        if (target === 'home') {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else if (target === 'about') {
+          setTimeout(() => document.querySelector('.about-section')?.scrollIntoView({ behavior: 'smooth' }), 50);
+        } else if (target === 'prompt') {
+          setTimeout(() => document.getElementById('prompt-section')?.scrollIntoView({ behavior: 'smooth' }), 50);
+        }
+      }
+    });
+  });
+
+  document.getElementById('footer-github')?.addEventListener('click', () => {
+    window.open(`https://github.com/${GITHUB_USER}`, '_blank', 'noopener,noreferrer');
+  });
+}
+
 function initPage() {
   renderCategoryChips();
   renderPromptTemplate();
+  wireFooterNav();
 
   const savedView = sessionStorage.getItem('activeView');
   showView(savedView === 'repos' ? 'repos' : 'welcome');
