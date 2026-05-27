@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Learn New Stack</title>
+    <link rel="icon" href="favicon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -15,22 +17,19 @@
   <body>
     <!-- ── Header ── -->
     <header class="site-header">
-      <div class="site-logo">
-        <div class="logo-mark"><span>LNS</span></div>
+      <a href="#" class="site-logo" id="nav-logo">
+        <div class="logo-mark">
+          <img src="favicon.png" alt="" class="logo-icon" width="32" height="32" />
+        </div>
         <span class="site-title">Learn New Stack</span>
-      </div>
-      <nav aria-label="Main">
-        <ul class="header-nav">
-          <li><a href="#" id="nav-home">Home</a></li>
-          <li><a href="#" id="nav-repos">Repositories</a></li>
-          <li><a href="#" id="nav-about">About</a></li>
-          <li><a href="#" id="nav-prompt">Prompt</a></li>
-        </ul>
+      </a>
+      <nav class="header-nav" aria-label="Main">
+        <a href="#" id="nav-home">Home</a>
+        <a href="#" id="nav-about">About</a>
+        <a href="#" id="nav-prompt">Prompt</a>
+        <a href="#" id="nav-repos">Repositories</a>
       </nav>
       <div class="header-actions">
-        <button class="btn-ghost" type="button" id="header-browse">
-          Browse repos
-        </button>
         <button class="btn-primary" type="button" id="github-ref">
           GitHub
         </button>
@@ -249,7 +248,7 @@
           <div class="section-header">
             <div>
               <div class="section-eyebrow">Methodology</div>
-              <h2 class="section-title">The prompt behind every repo</h2>
+              <h2 class="section-title">The prompt behind Full Course repos</h2>
               <p class="section-desc">
                 Repos in the Full Course track are built from this template —
                 a structured curriculum prompt for end-to-end, project-based
@@ -257,11 +256,12 @@
               </p>
             </div>
           </div>
-          <pre
+          <div
             id="prompt-template-display"
             class="prompt-template-box"
+            role="region"
             aria-label="Prompt template"
-          ></pre>
+          ></div>
         </div>
 
         <!-- Prompt builder -->

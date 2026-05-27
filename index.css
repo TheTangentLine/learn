@@ -49,25 +49,36 @@ body {
   border-bottom: 1px solid var(--border);
   padding: 0 2rem;
   height: 64px;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
+  gap: 1rem;
 }
 
 .site-logo {
   display: flex;
   align-items: center;
   gap: 0.6rem;
+  justify-self: start;
+  text-decoration: none;
+  color: inherit;
 }
 
 .logo-mark {
   width: 34px;
   height: 34px;
-  background: var(--text);
-  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+}
+
+.logo-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: block;
+  object-fit: contain;
 }
 
 .logo-mark span {
@@ -86,8 +97,9 @@ body {
 
 .header-nav {
   display: flex;
-  gap: 1.75rem;
-  list-style: none;
+  align-items: center;
+  gap: 1.5rem;
+  justify-self: center;
 }
 
 .header-nav a {
@@ -95,6 +107,7 @@ body {
   text-decoration: none;
   font-size: 0.9rem;
   font-weight: 600;
+  white-space: nowrap;
   transition: color 0.15s;
 }
 
@@ -106,6 +119,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  justify-self: end;
 }
 
 .btn-ghost {
@@ -943,6 +957,11 @@ body {
 
 .prompt-section {
   border-top: 1px solid var(--border);
+}
+
+.prompt-section .prompt-template-box {
+  margin-top: 0;
+  min-height: 120px;
 }
 
 .prompt-template-box,

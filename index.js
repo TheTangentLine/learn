@@ -84,7 +84,6 @@ const tabRepos         = document.getElementById('tab-repos');
 const btnContinue      = document.getElementById('btn-continue');
 const btnViewAll       = document.getElementById('btn-view-all');
 const btnAboutRepos    = document.getElementById('btn-about-repos');
-const headerBrowse     = document.getElementById('header-browse');
 const githubRef        = document.getElementById('github-ref');
 const btnRetry         = document.getElementById('btn-retry');
 const repoCountEl      = document.getElementById('repo-count');
@@ -109,7 +108,16 @@ const inputSkills      = document.getElementById('input-skills');
 let generatedPromptText = '';
 
 // Nav links
-document.getElementById('nav-home').addEventListener('click', (e) => { e.preventDefault(); showView('welcome'); });
+document.getElementById('nav-logo').addEventListener('click', (e) => {
+  e.preventDefault();
+  showView('welcome');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+document.getElementById('nav-home').addEventListener('click', (e) => {
+  e.preventDefault();
+  showView('welcome');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
 document.getElementById('nav-repos').addEventListener('click', (e) => { e.preventDefault(); showView('repos'); });
 document.getElementById('nav-about').addEventListener('click', (e) => {
   e.preventDefault();
@@ -178,6 +186,9 @@ function highlightPlaceholders(text) {
 function renderPromptTemplate() {
   if (!promptTemplateEl) return;
   promptTemplateEl.innerHTML = highlightPlaceholders(PROMPT_TEMPLATE);
+  if (!promptTemplateEl.textContent.trim()) {
+    promptTemplateEl.textContent = PROMPT_TEMPLATE;
+  }
 }
 
 function buildPrompt({ topics, weeks, days, skills }) {
@@ -367,7 +378,7 @@ async function loadRepos() {
 
 // ── Tab filters ───────────────────────────────────────────
 
-tabFilterCont.addEventListener('click', (e) => {
+tabFilterCont?.addEventListener('click', (e) => {
   const btn = e.target.closest('.repos-tab');
   if (!btn) return;
   tabFilterCont.querySelectorAll('.repos-tab').forEach((t) => t.classList.remove('active'));
@@ -379,21 +390,27 @@ tabFilterCont.addEventListener('click', (e) => {
 
 tabHome.addEventListener('click', () => showView('welcome'));
 tabRepos.addEventListener('click', () => showView('repos'));
-[btnContinue, btnViewAll, btnAboutRepos, headerBrowse].forEach((btn) => {
+[btnContinue, btnViewAll, btnAboutRepos].forEach((btn) => {
   btn?.addEventListener('click', () => showView('repos'));
 });
 githubRef?.addEventListener('click', () => {
   window.open(`https://github.com/${GITHUB_USER}`, '_blank', 'noopener,noreferrer');
 });
-btnRetry.addEventListener('click', loadRepos);
+btnRetry?.addEventListener('click', loadRepos);
 promptBuilderForm?.addEventListener('submit', handlePromptSubmit);
 btnCopyPrompt?.addEventListener('click', handleCopyPrompt);
 
-// ── Boot ──────────────────────────────────────────────────
+function initPage() {
+  renderCategoryChips();
+  renderPromptTemplate();
 
-renderCategoryChips();
-renderPromptTemplate();
+  const savedView = sessionStorage.getItem('activeView');
+  showView(savedView === 'repos' ? 'repos' : 'welcome');
+  loadRepos();
+}
 
-const savedView = sessionStorage.getItem('activeView');
-showView(savedView === 'repos' ? 'repos' : 'welcome');
-loadRepos();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initPage);
+} else {
+  initPage();
+}
