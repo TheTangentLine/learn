@@ -57,6 +57,7 @@ const btnContinue      = document.getElementById('btn-continue');
 const btnViewAll       = document.getElementById('btn-view-all');
 const btnAboutRepos    = document.getElementById('btn-about-repos');
 const headerBrowse     = document.getElementById('header-browse');
+const githubRef        = document.getElementById('github-ref');
 const btnRetry         = document.getElementById('btn-retry');
 const repoCountEl      = document.getElementById('repo-count');
 const categoryChipsEl  = document.getElementById('category-chips');
@@ -252,6 +253,9 @@ tabHome.addEventListener('click', () => showView('welcome'));
 tabRepos.addEventListener('click', () => showView('repos'));
 [btnContinue, btnViewAll, btnAboutRepos, headerBrowse].forEach((btn) => {
   btn?.addEventListener('click', () => showView('repos'));
+});
+githubRef?.addEventListener('click', () => {
+  window.open(`https://github.com/${GITHUB_USER}`, '_blank', 'noopener,noreferrer');
 });
 btnRetry.addEventListener('click', loadRepos);
 
