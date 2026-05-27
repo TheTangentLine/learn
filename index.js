@@ -59,6 +59,7 @@ I am compiling your daily lectures into a Git repository. Every lesson you gener
 * Clear heading hierarchies (\`#\`, \`##\`)
 * Properly formatted code blocks (with language specified)
 * Mathematical notations formatted in LaTeX (where applicable)
+* Mermaid diagrams (\`flowchart\`, \`sequenceDiagram\`, etc.) used frequently to illustrate flows, architectures, and process logic
 
 **Weekly Challenge:**
 The final day of each week (Day **[y]**) must include a complex, real-world "Weekly Challenge." This challenge should synthesize the week's lectures into a practical project, system design task, or advanced problem-solving scenario.
