@@ -6,6 +6,7 @@ let PROMPT_TEMPLATE = '';
 let PROMPT_PLACEHOLDERS = [];
 
 const DATA_BASE = 'data';
+const SITE_REPO = 'learn';
 
 function buildCatalog(categories, repos) {
   const labels = {};
@@ -497,6 +498,13 @@ function openGithubPicker(trigger) {
   positionGithubPicker(trigger, picker);
 }
 
+function wireFooterContributeLink() {
+  const link = document.getElementById('footer-contribute');
+  const owner = GITHUB_USERS[0];
+  if (!link || !owner) return;
+  link.href = `https://github.com/${owner}/${SITE_REPO}/blob/main/data/README.md`;
+}
+
 function wireGithubPickers() {
   const backdrop = document.getElementById('github-picker-backdrop');
   const picker = document.getElementById('github-picker');
@@ -568,6 +576,7 @@ async function initPage() {
   renderCategoryChips();
   renderPromptTemplate();
   wireGithubPickers();
+  wireFooterContributeLink();
   wireFooterNav();
 
   const savedView = sessionStorage.getItem('activeView');

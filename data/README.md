@@ -10,7 +10,7 @@ List one or more GitHub usernames as a JSON array:
 ["TheTangentLine", "AnotherOrg"]
 ```
 
-Header and footer **GitHub** buttons open a menu listing every username in `config.json`. Repo metadata is fetched only from usernames referenced in `repos.json`.
+The header **GitHub** button opens a menu listing every username in `config.json`. The footer links to this README for contribution steps. Repo metadata is fetched only from usernames referenced in `repos.json`.
 
 ## Add a learning repo
 
