@@ -359,6 +359,25 @@
           <div class="repos-header-inner">
             <h2 class="repos-title">All repositories</h2>
             <p class="repos-subtitle" id="repo-count">Loading…</p>
+            <div class="repos-toolbar" id="repos-toolbar" hidden>
+              <label class="repos-search-wrap">
+                <span class="visually-hidden">Search repositories</span>
+                <input
+                  type="search"
+                  id="repos-search"
+                  class="repos-search"
+                  placeholder="Search by name, topic, language…"
+                  autocomplete="off"
+                  disabled
+                />
+              </label>
+              <label class="repos-author-filter-wrap">
+                <span class="visually-hidden">Filter by author</span>
+                <select id="repos-author-filter" class="repos-author-filter" disabled>
+                  <option value="all">All authors</option>
+                </select>
+              </label>
+            </div>
             <div class="repos-tabs" id="repos-tab-filters" role="tablist"></div>
           </div>
         </div>
@@ -376,6 +395,9 @@
             </button>
           </div>
           <div id="repos-sections" class="repos-sections" hidden></div>
+          <div id="repos-empty" class="repos-empty" hidden>
+            <p>No repositories match your search.</p>
+          </div>
         </div>
       </section>
     </main>

@@ -2,6 +2,7 @@ let GITHUB_USERS = [];
 let REPO_CATEGORIES = [];
 let REPO_LABELS = {};
 let REPO_REGISTRY = [];
+let REGISTRY_BY_SLUG = new Map();
 let PROMPT_TEMPLATE = '';
 let PROMPT_PLACEHOLDERS = [];
 
@@ -69,6 +70,7 @@ async function loadSiteData() {
   REPO_CATEGORIES = catalog.categories;
   REPO_LABELS = catalog.labels;
   REPO_REGISTRY = catalog.registry;
+  REGISTRY_BY_SLUG = new Map(REPO_REGISTRY.map((r) => [r.slug, r]));
   PROMPT_TEMPLATE = await templateRes.text();
   PROMPT_PLACEHOLDERS = promptMeta.placeholders;
 }
@@ -90,6 +92,10 @@ const reposError       = document.getElementById('repos-error');
 const reposErrorMsg    = document.getElementById('repos-error-message');
 const reposSections    = document.getElementById('repos-sections');
 const tabFilterCont    = document.getElementById('repos-tab-filters');
+const reposToolbar     = document.getElementById('repos-toolbar');
+const reposSearch      = document.getElementById('repos-search');
+const reposAuthorFilter = document.getElementById('repos-author-filter');
+const reposEmpty       = document.getElementById('repos-empty');
 const statTotal        = document.getElementById('stat-total');
 const promptTemplateEl = document.getElementById('prompt-template-display');
 const promptBuilderForm = document.getElementById('prompt-builder-form');
@@ -158,6 +164,14 @@ function getDisplayName(name) {
 
 function getCategoryForRepo(repoName) {
   return REPO_CATEGORIES.find((c) => c.repos.includes(repoName));
+}
+
+function getRegistryBySlug(slug) {
+  return REGISTRY_BY_SLUG.get(slug);
+}
+
+function getRepoOwner(repo) {
+  return repo.owner || getRegistryBySlug(repo.name)?.username || '';
 }
 
 // ── Prompt template ───────────────────────────────────────
@@ -281,11 +295,15 @@ function renderAboutRepoList(repos) {
   const preview = repos.slice(0, 4);
   aboutRepoListEl.innerHTML = preview.map((repo) => {
     const cat = getCategoryForRepo(repo.name);
+    const owner = getRepoOwner(repo);
+    const ownerMeta = owner
+      ? ` · <a class="arp-author" href="https://github.com/${owner}" target="_blank" rel="noopener noreferrer">@${owner}</a>`
+      : '';
     return `
       <div class="about-repo-preview">
         <div class="arp-info">
           <div class="arp-name">${getDisplayName(repo.name)}</div>
-          <div class="arp-meta">${repo.language || 'Multi-language'} · Updated ${formatDate(repo.updated_at)}</div>
+          <div class="arp-meta">${repo.language || 'Multi-language'} · Updated ${formatDate(repo.updated_at)}${ownerMeta}</div>
         </div>
         ${cat ? `<span class="arp-badge" style="background:${cat.accent}22; color:${cat.accent}; border:1px solid ${cat.accent}55">${cat.title}</span>` : ''}
       </div>
@@ -297,12 +315,17 @@ function renderAboutRepoList(repos) {
 
 function renderRepoCard(repo, category, delay) {
   const name = getDisplayName(repo.name);
+  const owner = getRepoOwner(repo);
+  const authorLine = owner
+    ? `<a class="repo-author" href="https://github.com/${owner}" target="_blank" rel="noopener noreferrer">@${owner}</a>`
+    : '';
   return `
     <article class="repo-card" style="--cat-accent:${category.accent}; --cat-bg:${category.bg}; animation-delay:${delay * 0.06}s">
       <div class="repo-card-top"></div>
       <div class="repo-card-body">
         <a class="repo-name" href="${repo.html_url}" target="_blank" rel="noopener noreferrer">${name}</a>
         <span class="repo-slug">${repo.name}</span>
+        ${authorLine}
         <p class="repo-description">${repo.description || 'No description provided.'}</p>
         <div class="repo-meta">
           ${repo.language ? `<span class="lang-tag">${repo.language}</span>` : ''}
@@ -355,10 +378,19 @@ function showReposState(state, message) {
   reposLoading.hidden = state !== 'loading';
   reposError.hidden   = state !== 'error';
   reposSections.hidden = state !== 'ready';
+  if (reposEmpty) reposEmpty.hidden = state !== 'ready';
+  if (reposToolbar) reposToolbar.hidden = state === 'loading' || state === 'error';
+  const toolbarReady = state === 'ready';
+  if (reposSearch) reposSearch.disabled = !toolbarReady;
+  if (reposAuthorFilter) reposAuthorFilter.disabled = !toolbarReady;
   if (state === 'error' && message) reposErrorMsg.textContent = message;
 }
 
 let cachedRepos = null;
+let activeCategoryFilter = 'all';
+let activeSearchQuery = '';
+let activeAuthorFilter = 'all';
+let searchDebounceTimer = null;
 
 async function fetchReposForUser(username) {
   const res = await fetch(
@@ -384,11 +416,99 @@ async function fetchRepos() {
       const key = `${username}:${repo.name}`;
       if (!wanted.has(key) || seen.has(key)) continue;
       seen.add(key);
-      merged.push(repo);
+      merged.push({ ...repo, owner: username });
     }
   }
 
   return merged;
+}
+
+function repoMatchesSearch(repo, query) {
+  if (!query) return true;
+  const q = query.toLowerCase();
+  const label = getDisplayName(repo.name).toLowerCase();
+  const slug = repo.name.toLowerCase();
+  const desc = (repo.description || '').toLowerCase();
+  const lang = (repo.language || '').toLowerCase();
+  const owner = getRepoOwner(repo).toLowerCase();
+  return (
+    label.includes(q) ||
+    slug.includes(q) ||
+    desc.includes(q) ||
+    lang.includes(q) ||
+    owner.includes(q)
+  );
+}
+
+function repoMatchesCategory(repo, categoryFilter) {
+  if (categoryFilter === 'all') return true;
+  const cat = REPO_CATEGORIES.find((c) => c.id === categoryFilter);
+  return cat ? cat.repos.includes(repo.name) : false;
+}
+
+function getFilteredRepos() {
+  if (!cachedRepos) return [];
+  return cachedRepos.filter((repo) => {
+    if (!repoMatchesCategory(repo, activeCategoryFilter)) return false;
+    if (activeAuthorFilter !== 'all' && getRepoOwner(repo) !== activeAuthorFilter) return false;
+    if (!repoMatchesSearch(repo, activeSearchQuery)) return false;
+    return true;
+  });
+}
+
+function updateRepoCount(filteredCount, totalCount) {
+  if (!repoCountEl) return;
+  const tracks = REPO_CATEGORIES.length;
+  if (filteredCount < totalCount) {
+    repoCountEl.textContent = `${filteredCount} of ${totalCount} repos across ${tracks} learning tracks`;
+  } else {
+    repoCountEl.textContent = `${totalCount} repos across ${tracks} learning tracks`;
+  }
+}
+
+function applyRepoFilters() {
+  if (!cachedRepos) return;
+  const total = cachedRepos.length;
+  const filtered = getFilteredRepos();
+  renderCategorizedRepos(filtered, activeCategoryFilter);
+  updateRepoCount(filtered.length, total);
+
+  const hasResults = filtered.length > 0;
+  if (reposSections) reposSections.hidden = !hasResults;
+  if (reposEmpty) reposEmpty.hidden = hasResults;
+}
+
+function renderAuthorFilterOptions() {
+  if (!reposAuthorFilter) return;
+  const authors = [...new Set(REPO_REGISTRY.map((r) => r.username))].sort();
+  reposAuthorFilter.innerHTML =
+    '<option value="all">All authors</option>' +
+    authors.map((u) => `<option value="${u}">@${u}</option>`).join('');
+  reposAuthorFilter.value = activeAuthorFilter;
+}
+
+function wireReposFilters() {
+  reposSearch?.addEventListener('input', () => {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+      activeSearchQuery = reposSearch.value.trim();
+      applyRepoFilters();
+    }, 200);
+  });
+
+  reposAuthorFilter?.addEventListener('change', () => {
+    activeAuthorFilter = reposAuthorFilter.value;
+    applyRepoFilters();
+  });
+
+  tabFilterCont?.addEventListener('click', (e) => {
+    const btn = e.target.closest('.repos-tab');
+    if (!btn) return;
+    tabFilterCont.querySelectorAll('.repos-tab').forEach((t) => t.classList.remove('active'));
+    btn.classList.add('active');
+    activeCategoryFilter = btn.dataset.filter;
+    applyRepoFilters();
+  });
 }
 
 async function loadRepos() {
@@ -396,26 +516,21 @@ async function loadRepos() {
   try {
     cachedRepos = await fetchRepos();
     const total = cachedRepos.length;
-    repoCountEl.textContent = `${total} repos across ${REPO_CATEGORIES.length} learning tracks`;
     if (statTotal) statTotal.textContent = total;
-    renderCategorizedRepos(cachedRepos, 'all');
+    activeCategoryFilter = 'all';
+    activeSearchQuery = '';
+    activeAuthorFilter = 'all';
+    if (reposSearch) reposSearch.value = '';
+    renderAuthorFilterOptions();
     renderAboutRepoList(cachedRepos);
     showReposState('ready');
+    if (reposToolbar) reposToolbar.hidden = false;
+    applyRepoFilters();
   } catch (err) {
     repoCountEl.textContent = 'Could not load repo count';
     showReposState('error', err.message || 'Failed to load repositories.');
   }
 }
-
-// ── Tab filters ───────────────────────────────────────────
-
-tabFilterCont?.addEventListener('click', (e) => {
-  const btn = e.target.closest('.repos-tab');
-  if (!btn) return;
-  tabFilterCont.querySelectorAll('.repos-tab').forEach((t) => t.classList.remove('active'));
-  btn.classList.add('active');
-  if (cachedRepos) renderCategorizedRepos(cachedRepos, btn.dataset.filter);
-});
 
 // ── Event listeners ───────────────────────────────────────
 
@@ -575,6 +690,8 @@ async function initPage() {
   renderRepoFilterTabs();
   renderCategoryChips();
   renderPromptTemplate();
+  renderAuthorFilterOptions();
+  wireReposFilters();
   wireGithubPickers();
   wireFooterContributeLink();
   wireFooterNav();

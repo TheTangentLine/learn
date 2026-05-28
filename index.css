@@ -640,6 +640,16 @@ body {
   font-weight: 600;
 }
 
+.arp-author {
+  color: rgba(255, 255, 255, 0.65);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.arp-author:hover {
+  color: #fff;
+}
+
 .arp-badge {
   font-size: 0.7rem;
   font-weight: 800;
@@ -673,7 +683,90 @@ body {
   color: var(--text-muted);
   font-size: 0.93rem;
   font-weight: 600;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.repos-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.repos-search-wrap {
+  flex: 1;
+  min-width: min(100%, 220px);
+}
+
+.repos-search {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text);
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.repos-search:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.repos-search:disabled,
+.repos-author-filter:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.repos-author-filter-wrap {
+  flex-shrink: 0;
+}
+
+.repos-author-filter {
+  padding: 0.6rem 2rem 0.6rem 0.85rem;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b6860' d='M3 4.5L6 8l3-3.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.65rem center;
+}
+
+.repos-author-filter:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.repos-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .repos-tabs {
@@ -866,6 +959,19 @@ body {
   font-family: monospace;
   color: var(--text-light);
   letter-spacing: 0;
+}
+
+.repo-author {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+  width: fit-content;
+  transition: color 0.15s;
+}
+
+.repo-author:hover {
+  color: var(--cat-accent, var(--accent));
 }
 
 .repo-description {
