@@ -8,6 +8,11 @@ let PROMPT_PLACEHOLDERS = [];
 
 const DATA_BASE = 'data';
 const SITE_REPO = 'learn';
+const USER_ERROR_MESSAGE = 'Internal server error';
+
+function logServerError(context, err) {
+  console.error(`[${context}]`, err);
+}
 
 function buildCatalog(categories, repos) {
   const labels = {};
@@ -174,6 +179,136 @@ function getRepoOwner(repo) {
   return repo.owner || getRegistryBySlug(repo.name)?.username || '';
 }
 
+function getContributorLogin(c) {
+  return typeof c === 'string' ? c : c.login;
+}
+
+function normalizeContributor(c) {
+  if (typeof c === 'string') return { login: c, avatar_url: null };
+  return c;
+}
+
+function getRepoContributors(repo) {
+  if (repo.contributors?.length) {
+    return repo.contributors.map(normalizeContributor);
+  }
+  const owner = getRepoOwner(repo);
+  return owner ? [{ login: owner, avatar_url: null }] : [];
+}
+
+const GITHUB_HEADERS = { Accept: 'application/vnd.github+json' };
+const GITHUB_CACHE_TTL_MS = 30 * 60 * 1000;
+const CONTRIBUTOR_FETCH_CONCURRENCY = 2;
+const CACHE_PREFIX = 'learn:gh:';
+
+function getGithubCache(key, { allowStale = false } = {}) {
+  try {
+    const raw = sessionStorage.getItem(CACHE_PREFIX + key);
+    if (!raw) return null;
+    const { data, expires } = JSON.parse(raw);
+    if (Date.now() > expires) {
+      if (!allowStale) {
+        sessionStorage.removeItem(CACHE_PREFIX + key);
+        return null;
+      }
+    }
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+function setGithubCache(key, data) {
+  try {
+    sessionStorage.setItem(
+      CACHE_PREFIX + key,
+      JSON.stringify({ data, expires: Date.now() + GITHUB_CACHE_TTL_MS })
+    );
+  } catch {
+    /* storage full — skip cache */
+  }
+}
+
+async function githubApiFetch(url, { throwOnRateLimit = true } = {}) {
+  const res = await fetch(url, { headers: GITHUB_HEADERS });
+  if (res.status === 403 || res.status === 429) {
+    if (throwOnRateLimit) {
+      logServerError('GitHub API rate limit', { status: res.status, url });
+      throw new Error(USER_ERROR_MESSAGE);
+    }
+    return null;
+  }
+  if (!res.ok) {
+    if (throwOnRateLimit) {
+      logServerError('GitHub API error', { status: res.status, url });
+      throw new Error(USER_ERROR_MESSAGE);
+    }
+    return null;
+  }
+  return res;
+}
+
+async function mapWithConcurrency(items, fn, limit) {
+  const results = new Array(items.length);
+  let index = 0;
+
+  async function worker() {
+    while (index < items.length) {
+      const i = index++;
+      results[i] = await fn(items[i], i);
+    }
+  }
+
+  const workers = Math.min(limit, items.length);
+  await Promise.all(Array.from({ length: workers }, worker));
+  return results;
+}
+
+function seedReposWithOwnerContributors(repos) {
+  return repos.map((repo) => {
+    const owner = getRepoOwner(repo);
+    return {
+      ...repo,
+      contributors: owner ? [{ login: owner, avatar_url: null }] : [],
+    };
+  });
+}
+
+function renderContributorLinks(contributors, linkClass) {
+  return contributors
+    .map(
+      (c) => {
+        const login = getContributorLogin(c);
+        return `<a class="${linkClass}" href="https://github.com/${login}" target="_blank" rel="noopener noreferrer">@${login}</a>`;
+      }
+    )
+    .join('');
+}
+
+function renderContributorsBlock(contributors) {
+  if (!contributors.length) return '';
+  const maxVisible = 3;
+  const shown = contributors.slice(0, maxVisible);
+  const extra = contributors.length - maxVisible;
+
+  const chips = shown
+    .map((c) => {
+      const login = getContributorLogin(c);
+      const avatar = c.avatar_url
+        ? `<img class="repo-contributor-avatar" src="${c.avatar_url}" alt="" width="18" height="18" loading="lazy" />`
+        : `<span class="repo-contributor-initial" aria-hidden="true">${login.charAt(0).toUpperCase()}</span>`;
+      return `<a class="repo-contributor-chip" href="https://github.com/${login}" target="_blank" rel="noopener noreferrer" title="@${login}">${avatar}<span class="repo-contributor-name">@${login}</span></a>`;
+    })
+    .join('');
+
+  const more =
+    extra > 0
+      ? `<span class="repo-contributor-more" title="${extra} more contributor${extra === 1 ? '' : 's'}">+${extra}</span>`
+      : '';
+
+  return `<div class="repo-contributors">${chips}${more}</div>`;
+}
+
 // ── Prompt template ───────────────────────────────────────
 
 function highlightPlaceholders(text) {
@@ -295,15 +430,15 @@ function renderAboutRepoList(repos) {
   const preview = repos.slice(0, 4);
   aboutRepoListEl.innerHTML = preview.map((repo) => {
     const cat = getCategoryForRepo(repo.name);
-    const owner = getRepoOwner(repo);
-    const ownerMeta = owner
-      ? ` · <a class="arp-author" href="https://github.com/${owner}" target="_blank" rel="noopener noreferrer">@${owner}</a>`
+    const contributors = getRepoContributors(repo);
+    const contribMeta = contributors.length
+      ? ` · <span class="arp-contributors">${renderContributorLinks(contributors, 'arp-contributor')}</span>`
       : '';
     return `
       <div class="about-repo-preview">
         <div class="arp-info">
           <div class="arp-name">${getDisplayName(repo.name)}</div>
-          <div class="arp-meta">${repo.language || 'Multi-language'} · Updated ${formatDate(repo.updated_at)}${ownerMeta}</div>
+          <div class="arp-meta">${repo.language || 'Multi-language'} · Updated ${formatDate(repo.updated_at)}${contribMeta}</div>
         </div>
         ${cat ? `<span class="arp-badge" style="background:${cat.accent}22; color:${cat.accent}; border:1px solid ${cat.accent}55">${cat.title}</span>` : ''}
       </div>
@@ -315,17 +450,12 @@ function renderAboutRepoList(repos) {
 
 function renderRepoCard(repo, category, delay) {
   const name = getDisplayName(repo.name);
-  const owner = getRepoOwner(repo);
-  const authorLine = owner
-    ? `<a class="repo-author" href="https://github.com/${owner}" target="_blank" rel="noopener noreferrer">@${owner}</a>`
-    : '';
+  const contributorsBlock = renderContributorsBlock(getRepoContributors(repo));
   return `
     <article class="repo-card" style="--cat-accent:${category.accent}; --cat-bg:${category.bg}; animation-delay:${delay * 0.06}s">
       <div class="repo-card-top"></div>
       <div class="repo-card-body">
         <a class="repo-name" href="${repo.html_url}" target="_blank" rel="noopener noreferrer">${name}</a>
-        <span class="repo-slug">${repo.name}</span>
-        ${authorLine}
         <p class="repo-description">${repo.description || 'No description provided.'}</p>
         <div class="repo-meta">
           ${repo.language ? `<span class="lang-tag">${repo.language}</span>` : ''}
@@ -334,6 +464,7 @@ function renderRepoCard(repo, category, delay) {
           <span class="repo-meta-dot"></span>
           <span>${formatDate(repo.updated_at)}</span>
         </div>
+        ${contributorsBlock ? `<div class="repo-card-footer">${contributorsBlock}</div>` : ''}
       </div>
     </article>
   `;
@@ -393,12 +524,63 @@ let activeAuthorFilter = 'all';
 let searchDebounceTimer = null;
 
 async function fetchReposForUser(username) {
-  const res = await fetch(
-    `https://api.github.com/users/${username}/repos?per_page=100`,
-    { headers: { Accept: 'application/vnd.github+json' } }
+  const cacheKey = `repos:${username}`;
+  const cached = getGithubCache(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const res = await githubApiFetch(
+      `https://api.github.com/users/${username}/repos?per_page=100`
+    );
+    const data = await res.json();
+    setGithubCache(cacheKey, data);
+    return data;
+  } catch (err) {
+    const stale = getGithubCache(cacheKey, { allowStale: true });
+    if (stale) return stale;
+    logServerError(`fetchReposForUser(${username})`, err);
+    throw new Error(USER_ERROR_MESSAGE);
+  }
+}
+
+async function fetchContributorsForRepo(owner, repoName) {
+  const cacheKey = `contributors:${owner}/${repoName}`;
+  const cached = getGithubCache(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const res = await githubApiFetch(
+      `https://api.github.com/repos/${owner}/${repoName}/contributors?per_page=100`,
+      { throwOnRateLimit: false }
+    );
+    if (!res) {
+      return getGithubCache(cacheKey, { allowStale: true });
+    }
+    const data = await res.json();
+    const contributors = data.map((c) => ({
+      login: c.login,
+      avatar_url: c.avatar_url,
+    }));
+    setGithubCache(cacheKey, contributors);
+    return contributors;
+  } catch {
+    return getGithubCache(cacheKey, { allowStale: true });
+  }
+}
+
+async function enrichReposWithContributors(repos) {
+  return mapWithConcurrency(
+    repos,
+    async (repo) => {
+      const owner = getRepoOwner(repo);
+      const fetched = owner ? await fetchContributorsForRepo(owner, repo.name) : null;
+      const contributors = fetched?.length
+        ? fetched
+        : (owner ? [{ login: owner, avatar_url: null }] : []);
+      return { ...repo, contributors };
+    },
+    CONTRIBUTOR_FETCH_CONCURRENCY
   );
-  if (!res.ok) throw new Error(`GitHub API returned ${res.status} for ${username}`);
-  return res.json();
 }
 
 async function fetchRepos() {
@@ -430,13 +612,16 @@ function repoMatchesSearch(repo, query) {
   const slug = repo.name.toLowerCase();
   const desc = (repo.description || '').toLowerCase();
   const lang = (repo.language || '').toLowerCase();
-  const owner = getRepoOwner(repo).toLowerCase();
+  const contributors = getRepoContributors(repo)
+    .map(getContributorLogin)
+    .join(' ')
+    .toLowerCase();
   return (
     label.includes(q) ||
     slug.includes(q) ||
     desc.includes(q) ||
     lang.includes(q) ||
-    owner.includes(q)
+    contributors.includes(q)
   );
 }
 
@@ -450,7 +635,12 @@ function getFilteredRepos() {
   if (!cachedRepos) return [];
   return cachedRepos.filter((repo) => {
     if (!repoMatchesCategory(repo, activeCategoryFilter)) return false;
-    if (activeAuthorFilter !== 'all' && getRepoOwner(repo) !== activeAuthorFilter) return false;
+    if (
+      activeAuthorFilter !== 'all' &&
+      !getRepoContributors(repo).some((c) => getContributorLogin(c) === activeAuthorFilter)
+    ) {
+      return false;
+    }
     if (!repoMatchesSearch(repo, activeSearchQuery)) return false;
     return true;
   });
@@ -480,10 +670,12 @@ function applyRepoFilters() {
 
 function renderAuthorFilterOptions() {
   if (!reposAuthorFilter) return;
-  const authors = [...new Set(REPO_REGISTRY.map((r) => r.username))].sort();
+  const contributors = cachedRepos
+    ? [...new Set(cachedRepos.flatMap((r) => getRepoContributors(r).map(getContributorLogin)))].sort()
+    : [...new Set(REPO_REGISTRY.map((r) => r.username))].sort();
   reposAuthorFilter.innerHTML =
-    '<option value="all">All authors</option>' +
-    authors.map((u) => `<option value="${u}">@${u}</option>`).join('');
+    '<option value="all">All contributors</option>' +
+    contributors.map((u) => `<option value="${u}">@${u}</option>`).join('');
   reposAuthorFilter.value = activeAuthorFilter;
 }
 
@@ -511,10 +703,23 @@ function wireReposFilters() {
   });
 }
 
+async function loadContributorDetails(repos) {
+  try {
+    const enriched = await enrichReposWithContributors(repos);
+    cachedRepos = enriched;
+    renderAuthorFilterOptions();
+    renderAboutRepoList(cachedRepos);
+    applyRepoFilters();
+  } catch {
+    /* keep owner-only fallback from initial load */
+  }
+}
+
 async function loadRepos() {
   showReposState('loading');
   try {
-    cachedRepos = await fetchRepos();
+    const repos = await fetchRepos();
+    cachedRepos = seedReposWithOwnerContributors(repos);
     const total = cachedRepos.length;
     if (statTotal) statTotal.textContent = total;
     activeCategoryFilter = 'all';
@@ -526,9 +731,11 @@ async function loadRepos() {
     showReposState('ready');
     if (reposToolbar) reposToolbar.hidden = false;
     applyRepoFilters();
+    loadContributorDetails(repos);
   } catch (err) {
+    logServerError('loadRepos', err);
     repoCountEl.textContent = 'Could not load repo count';
-    showReposState('error', err.message || 'Failed to load repositories.');
+    showReposState('error', USER_ERROR_MESSAGE);
   }
 }
 
@@ -666,13 +873,13 @@ function wireFooterNav() {
 
 }
 
-function showSiteDataError(message) {
-  console.error(message);
-  if (repoCountEl) repoCountEl.textContent = 'Site configuration could not be loaded';
-  if (reposErrorMsg) reposErrorMsg.textContent = message;
-  showReposState('error', message);
+function showSiteDataError(err) {
+  logServerError('loadSiteData', err);
+  if (repoCountEl) repoCountEl.textContent = 'Could not load repo count';
+  if (reposErrorMsg) reposErrorMsg.textContent = USER_ERROR_MESSAGE;
+  showReposState('error', USER_ERROR_MESSAGE);
   if (promptTemplateEl) {
-    promptTemplateEl.textContent = 'Prompt template unavailable — check data/ files.';
+    promptTemplateEl.textContent = USER_ERROR_MESSAGE;
   }
 }
 
@@ -680,7 +887,7 @@ async function initPage() {
   try {
     await loadSiteData();
   } catch (err) {
-    showSiteDataError(err.message || 'Failed to load site data.');
+    showSiteDataError(err);
     wireFooterNav();
     const savedView = sessionStorage.getItem('activeView');
     showView(savedView === 'repos' ? 'repos' : 'welcome');
