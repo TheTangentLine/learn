@@ -58,5 +58,11 @@
     "label": "OIDC Flow",
     "category": "application",
     "username": "TheTangentLine"
+  },
+  {
+    "slug": "learning-rag-workflow",
+    "label": "RAG Workflow",
+    "category": "application",
+    "username": "gitHuyNgo"
   }
 ]
