@@ -16,7 +16,8 @@ A static catalog and landing page for curated **Learn_*** repositories — hands
 | Path | Purpose |
 |------|---------|
 | [`data/`](data/README.md) | Site content (repos, categories, GitHub users, prompt template) |
-| [`scripts/validate-data.mjs`](scripts/validate-data.mjs) | Validates `data/*.json` before deploy |
+| [`scripts/validate-data.mjs`](scripts/validate-data.mjs) | Validates `data/*.json` (also run in CI on every push and PR) |
+| [`.github/workflows/validate-data.yml`](.github/workflows/validate-data.yml) | CI: validates data on all branches |
 | `index.html`, `index.css`, `index.js` | Front-end (no build step) |
 
 ## Quick start (local)
@@ -26,7 +27,7 @@ A static catalog and landing page for curated **Learn_*** repositories — hands
 python3 -m http.server 8765
 # Open http://127.0.0.1:8765
 
-# Validate data files
+# Validate data files (same check CI runs)
 node scripts/validate-data.mjs
 
 # Demo without GitHub API (placeholder data)
