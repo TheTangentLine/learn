@@ -583,6 +583,41 @@ async function enrichReposWithContributors(repos) {
   );
 }
 
+function shouldUsePlaceholder() {
+  return new URLSearchParams(window.location.search).has('placeholder');
+}
+
+async function loadPlaceholderRepos() {
+  const res = await fetch(`${DATA_BASE}/repos-placeholder.json`);
+  if (!res.ok) throw new Error('Failed to load placeholder repos');
+  const data = await res.json();
+  const allowed = new Set(REPO_REGISTRY.map((r) => r.slug));
+  return data
+    .filter((repo) => allowed.has(repo.name))
+    .map((repo) => ({
+      ...repo,
+      contributors: (repo.contributors || []).map(normalizeContributor),
+    }));
+}
+
+function finishReposLoad(repos, { skipContributorFetch = false } = {}) {
+  cachedRepos = skipContributorFetch ? repos : seedReposWithOwnerContributors(repos);
+  const total = cachedRepos.length;
+  if (statTotal) statTotal.textContent = total;
+  activeCategoryFilter = 'all';
+  activeSearchQuery = '';
+  activeAuthorFilter = 'all';
+  if (reposSearch) reposSearch.value = '';
+  renderAuthorFilterOptions();
+  renderAboutRepoList(cachedRepos);
+  showReposState('ready');
+  if (reposToolbar) reposToolbar.hidden = false;
+  applyRepoFilters();
+  if (!skipContributorFetch) {
+    loadContributorDetails(repos);
+  }
+}
+
 async function fetchRepos() {
   const wanted = new Map(
     REPO_REGISTRY.map((r) => [`${r.username}:${r.slug}`, r])
@@ -718,22 +753,25 @@ async function loadContributorDetails(repos) {
 async function loadRepos() {
   showReposState('loading');
   try {
+    if (shouldUsePlaceholder()) {
+      const placeholders = await loadPlaceholderRepos();
+      finishReposLoad(placeholders, { skipContributorFetch: true });
+      return;
+    }
+
     const repos = await fetchRepos();
-    cachedRepos = seedReposWithOwnerContributors(repos);
-    const total = cachedRepos.length;
-    if (statTotal) statTotal.textContent = total;
-    activeCategoryFilter = 'all';
-    activeSearchQuery = '';
-    activeAuthorFilter = 'all';
-    if (reposSearch) reposSearch.value = '';
-    renderAuthorFilterOptions();
-    renderAboutRepoList(cachedRepos);
-    showReposState('ready');
-    if (reposToolbar) reposToolbar.hidden = false;
-    applyRepoFilters();
-    loadContributorDetails(repos);
+    finishReposLoad(repos);
   } catch (err) {
     logServerError('loadRepos', err);
+    try {
+      const placeholders = await loadPlaceholderRepos();
+      if (placeholders.length) {
+        finishReposLoad(placeholders, { skipContributorFetch: true });
+        return;
+      }
+    } catch (placeholderErr) {
+      logServerError('loadPlaceholderRepos', placeholderErr);
+    }
     repoCountEl.textContent = 'Could not load repo count';
     showReposState('error', USER_ERROR_MESSAGE);
   }

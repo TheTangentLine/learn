@@ -66,6 +66,16 @@ Filter tabs and welcome cards update automatically; no HTML or JS edits needed.
 - Template body: [`prompt-template.md`](prompt-template.md)
 - Placeholder tokens (for highlighting in the UI): [`prompt.json`](prompt.json)
 
+## Placeholder data (offline / demo)
+
+[`repos-placeholder.json`](repos-placeholder.json) holds sample repo cards (descriptions, stars, contributors) aligned with [`repos.json`](repos.json). Use it when:
+
+- The GitHub API is rate-limited or unavailable (the site falls back automatically)
+- You want demo data without API calls: open the site with `?placeholder` in the URL  
+  Example: `http://127.0.0.1:8765/?placeholder` then go to Repositories
+
+Edit placeholder entries to match new slugs in `repos.json`.
+
 ## Troubleshooting
 
 | Problem | Check |

@@ -1,0 +1,39 @@
+[
+  {
+    "name": "Learn_microservice_communication",
+    "html_url": "https://github.com/TheTangentLine/Learn_microservice_communication",
+    "description": "Learn about communication in microservices.",
+    "language": "Go",
+    "stargazers_count": 1,
+    "updated_at": "2025-11-02T14:30:00Z",
+    "owner": "TheTangentLine",
+    "contributors": [
+      { "login": "TheTangentLine", "avatar_url": "https://github.com/TheTangentLine.png" }
+    ]
+  },
+  {
+    "name": "Learn_interpreter",
+    "html_url": "https://github.com/TheTangentLine/Learn_interpreter",
+    "description": "Learn how to build an interpreter",
+    "language": "Go",
+    "stargazers_count": 42,
+    "updated_at": "2026-01-10T08:20:00Z",
+    "owner": "TheTangentLine",
+    "contributors": [
+      { "login": "TheTangentLine", "avatar_url": "https://github.com/TheTangentLine.png" },
+      { "login": "n0thing2c", "avatar_url": "https://github.com/n0thing2c.png" }
+    ]
+  },
+  {
+    "name": "learning-rag-workflow",
+    "html_url": "https://github.com/gitHuyNgo/learning-rag-workflow",
+    "description": "No description, website, or topics provided.",
+    "language": "Python",
+    "stargazers_count": 14,
+    "updated_at": "2026-01-22T15:30:00Z",
+    "owner": "gitHuyNgo",
+    "contributors": [
+      { "login": "gitHuyNgo", "avatar_url": "https://github.com/gitHuyNgo.png" }
+    ]
+  }
+]
