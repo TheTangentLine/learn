@@ -64,5 +64,11 @@
     "label": "RAG Workflow",
     "category": "application",
     "username": "gitHuyNgo"
+  },
+  {
+    "slug": "Learn_rate_limiter",
+    "label": "Rate Limiter",
+    "category": "from-scratch",
+    "username": "TheTangentLine"
   }
 ]
