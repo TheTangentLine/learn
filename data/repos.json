@@ -70,5 +70,11 @@
     "label": "Rate Limiter",
     "category": "from-scratch",
     "username": "TheTangentLine"
+  },
+  {
+    "slug": "Learn_MCP_server",
+    "label": "MCP Server",
+    "category": "application",
+    "username": "TheTangentLine"
   }
 ]
