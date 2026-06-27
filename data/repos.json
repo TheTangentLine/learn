@@ -82,5 +82,11 @@
     "label": "Distributed systems",
     "category": "full-course",
     "username": "TheTangentLine"
+  },
+  {
+    "slug": "Learn_web_server",
+    "label": "Web server",
+    "category": "from-scratch",
+    "username": "TheTangentLine"
   }
 ]
