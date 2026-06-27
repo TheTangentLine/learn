@@ -76,5 +76,11 @@
     "label": "MCP Server",
     "category": "application",
     "username": "TheTangentLine"
-  }
+  },
+  {
+    "slug": "Learn_distributed_systems",
+    "label": "Distributed systems",
+    "category": "full-course",
+    "username": "TheTangentLine"
+  },
 ]
