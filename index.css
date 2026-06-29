@@ -1413,6 +1413,117 @@ body {
 
 /* ── Responsive ──────────────────────────────── */
 
+/* ── Mock Interview MCP section ──────────────────── */
+
+.mcp-prereqs {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 2.5rem;
+}
+
+.mcp-prereq {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(79, 70, 229, 0.08);
+  border: 1px solid rgba(79, 70, 229, 0.2);
+  border-radius: var(--radius-pill);
+  padding: 0.25rem 0.75rem;
+  letter-spacing: 0.01em;
+}
+
+.mcp-steps {
+  list-style: none;
+  margin: 0 0 2.5rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.mcp-step {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.mcp-step-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.mcp-step-num {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  background: var(--text);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 800;
+  margin-top: 0.1rem;
+}
+
+.mcp-step-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.3rem;
+}
+
+.mcp-step-desc {
+  font-size: 0.875rem;
+  color: var(--text-light);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.mcp-step-desc code {
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+  font-size: 0.8rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.05rem 0.35rem;
+  color: var(--text);
+}
+
+.mcp-code {
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+  font-size: 0.82rem;
+  line-height: 1.65;
+  white-space: pre;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 2px);
+  padding: 1rem 1.25rem;
+  margin: 0;
+  overflow-x: auto;
+  color: var(--text);
+}
+
+.mcp-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.mcp-actions .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  text-decoration: none;
+}
+
 @media (max-width: 760px) {
   .hero-section {
     grid-template-columns: 1fr;

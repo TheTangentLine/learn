@@ -33,6 +33,7 @@
         <a href="#" id="nav-home">Home</a>
         <a href="#" id="nav-about">About</a>
         <a href="#" id="nav-prompt">Prompt</a>
+        <a href="#" id="nav-mcp">Mock Interview</a>
         <a href="#" id="nav-repos">Repositories</a>
       </nav>
       <div class="header-actions">
@@ -256,6 +257,115 @@
           </div>
         </div>
 
+        <!-- Mock Interview MCP -->
+        <div class="mcp-section section-wrap" id="mcp-section">
+          <div class="section-header">
+            <div>
+              <div class="section-eyebrow">Mock Interview</div>
+              <h2 class="section-title">Practice with your own code</h2>
+              <p class="section-desc">
+                A Dockerized MCP server that indexes your GitHub repositories
+                into a local vector database and gives an LLM real-time access
+                to your source code — so every interview question is grounded
+                in systems you actually built.
+              </p>
+            </div>
+          </div>
+
+          <div class="mcp-prereqs">
+            <span class="mcp-prereq">Python 3.11+</span>
+            <span class="mcp-prereq">Docker</span>
+            <span class="mcp-prereq">Git</span>
+            <span class="mcp-prereq">Make</span>
+          </div>
+
+          <ol class="mcp-steps">
+            <li class="mcp-step">
+              <div class="mcp-step-header">
+                <span class="mcp-step-num">1</span>
+                <div>
+                  <div class="mcp-step-title">Clone and start the server</div>
+                  <p class="mcp-step-desc">
+                    One command clones the target repos, builds the Docker
+                    image, and starts the MCP server in the background.
+                  </p>
+                </div>
+              </div>
+              <pre class="mcp-code">git clone https://github.com/TheTangentLine/Learn_MCP_server
+cd Learn_MCP_server
+make run</pre>
+            </li>
+
+            <li class="mcp-step">
+              <div class="mcp-step-header">
+                <span class="mcp-step-num">2</span>
+                <div>
+                  <div class="mcp-step-title">Register the server with your AI client</div>
+                  <p class="mcp-step-desc">
+                    Add the following to <code>.cursor/mcp.json</code> (Cursor) or
+                    <code>~/Library/Application Support/Claude/claude_desktop_config.json</code>
+                    (Claude Desktop), then restart the client.
+                  </p>
+                </div>
+              </div>
+              <pre class="mcp-code">{
+  "mcpServers": {
+    "mock-interview": {
+      "command": "docker",
+      "args": [
+        "compose",
+        "-f",
+        "/path/to/Learn_MCP_server/docker-compose.yml",
+        "run",
+        "--rm",
+        "mcp-server"
+      ]
+    }
+  }
+}</pre>
+            </li>
+
+            <li class="mcp-step">
+              <div class="mcp-step-header">
+                <span class="mcp-step-num">3</span>
+                <div>
+                  <div class="mcp-step-title">Start your mock interview</div>
+                  <p class="mcp-step-desc">
+                    Open a new chat in Cursor or Claude Desktop and send the
+                    prompt below. The LLM will discover your indexed repos,
+                    pick a topic, and ask questions grounded in your actual
+                    implementation.
+                  </p>
+                </div>
+              </div>
+              <pre class="mcp-code">I want a mock interview based on my repositories.</pre>
+            </li>
+          </ol>
+
+          <div class="mcp-actions">
+            <a
+              class="btn-primary"
+              href="https://github.com/TheTangentLine/Learn_MCP_server"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View on GitHub
+              <svg
+                width="14"
+                height="14"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                viewBox="0 0 24 24"
+              >
+                <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
+            </a>
+          </div>
+        </div>
+
         <!-- Prompt template -->
         <div class="prompt-section section-wrap" id="prompt-section">
           <div class="section-header">
@@ -419,6 +529,7 @@
           <a href="#" data-nav="home">Home</a>
           <a href="#" data-nav="about">About</a>
           <a href="#" data-nav="prompt">Prompt</a>
+          <a href="#" data-nav="mcp">Mock Interview</a>
           <a href="#" data-nav="repos">Repositories</a>
         </nav>
         <div class="footer-meta">

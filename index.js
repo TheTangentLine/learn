@@ -136,6 +136,11 @@ document.getElementById('nav-prompt').addEventListener('click', (e) => {
   showView('welcome');
   setTimeout(() => document.getElementById('prompt-section')?.scrollIntoView({ behavior: 'smooth' }), 50);
 });
+document.getElementById('nav-mcp').addEventListener('click', (e) => {
+  e.preventDefault();
+  showView('welcome');
+  setTimeout(() => document.getElementById('mcp-section')?.scrollIntoView({ behavior: 'smooth' }), 50);
+});
 
 // ── View switching ────────────────────────────────────────
 
@@ -904,6 +909,8 @@ function wireFooterNav() {
           setTimeout(() => document.querySelector('.about-section')?.scrollIntoView({ behavior: 'smooth' }), 50);
         } else if (target === 'prompt') {
           setTimeout(() => document.getElementById('prompt-section')?.scrollIntoView({ behavior: 'smooth' }), 50);
+        } else if (target === 'mcp') {
+          setTimeout(() => document.getElementById('mcp-section')?.scrollIntoView({ behavior: 'smooth' }), 50);
         }
       }
     });
